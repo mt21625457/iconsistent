@@ -663,47 +663,4 @@ void imap_destory(imap **map)
 	}
 }
 
-/*
-int test() {
-
-	int keyArray[20] = {24,25,13,35,23, 26,67,47,38,98, 20,19,17,49,12, 21,9,18,14,15};
-
-	rbtree *T = (rbtree *)malloc(sizeof(rbtree));
-	if (T == NULL) {
-		printf("malloc failed\n");
-		return -1;
-	}
-	
-	T->nil = (rbtree_node*)malloc(sizeof(rbtree_node));
-	T->nil->color = BLACK;
-	T->root = T->nil;
-
-	rbtree_node *node = T->nil;
-	int i = 0;
-	for (i = 0;i < 20;i ++) {
-		node = (rbtree_node*)malloc(sizeof(rbtree_node));
-		node->key = keyArray[i];
-		node->value = NULL;
-
-		rbtree_insert(T, node);
-		
-	}
-
-	rbtree_traversal(T, T->root);
-	printf("----------------------------------------\n");
-
-	for (i = 0;i < 20;i ++) {
-
-		rbtree_node *node = rbtree_search(T, keyArray[i]);
-		rbtree_node *cur = rbtree_delete(T, node);
-		free(cur);
-
-		rbtree_traversal(T, T->root);
-		printf("----------------------------------------\n");
-	}
-		
-}
-
-*/
-
 

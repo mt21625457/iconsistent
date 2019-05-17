@@ -28,6 +28,8 @@ int array_del(array * arr, uint32_t opt);
 
 void array_sort(array * arr);
 
+uint32_t array_search(array * arr, uint64_t key);
+
 void array_destory(array ** arr);
 
 
@@ -40,10 +42,10 @@ void array_destory(array ** arr);
 typedef struct _member {
 	char * string;
 	int len;
-}menber;
+}member;
 
 typedef struct _iconfig {
-	uint64_t(*Hasher)(const void *, int, uint64_t);     //哈希函数 
+	uint64_t(*Hasher)(const void *, int, uint64_t);         //哈希函数 
 	int PartitionCount;                                     //密钥分布在分区之间。质数是均匀分布密钥的好方法。如果键太多，选择一个大的PartitionCount。
 	int ReplicationFactor;                                  //成员在一致的哈希环上复制。这个数字表示一个成员在环上复制了多少次。
 	double load;                                            //用于计算平均荷载
@@ -52,7 +54,7 @@ typedef struct _iconfig {
 typedef struct _iconsistent {
 	iconfig config;
 	uint64_t(*Hasher)(const void *, int, uint64_t);
-	uint64_t * sortedSet;
+	array * sortedSet;
 	uint64_t partitionCount;
 	imap * loads;
 	imap * members;
@@ -72,14 +74,15 @@ iconsistent * iconsistent_init(iconfig config);
 
 double iconsistent_AverageLoad(iconsistent * c);
 
-int iconsistent_add(iconsistent * c,menber *Menber);
+int iconsistent_add(iconsistent * c, member *Menber);
+
+member * iconsistent_getmembers(iconsistent * c);
+
+int iconsistent_FindPartitionID(iconsistent * c,void * key, int len);
 
 #ifdef __cplusplus
 }
 #endif
-
-
-
 
 
 
