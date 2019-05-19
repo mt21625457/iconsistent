@@ -26,6 +26,8 @@ int array_append(array * arr, uint64_t value);
 
 int array_del(array * arr, uint32_t opt);
 
+void array_delValue(array * arr, uint64_t value);
+
 void array_sort(array * arr);
 
 uint32_t array_search(array * arr, uint64_t key);
@@ -70,15 +72,35 @@ typedef struct _iconsistent {
 extern "C" {
 #endif
 
+// GetMembers returns a thread-safe copy of members.
 iconsistent * iconsistent_init(iconfig config);
 
+// AverageLoad exposes the current average load.
 double iconsistent_AverageLoad(iconsistent * c);
 
+// Add adds a new member to the consistent hash circle.
 int iconsistent_add(iconsistent * c, member *Menber);
 
+// GetMembers returns a thread-safe copy of members.
 member * iconsistent_getmembers(iconsistent * c);
 
+// FindPartitionID returns partition id for given key.
 int iconsistent_FindPartitionID(iconsistent * c,void * key, int len);
+
+// GetPartitionOwner returns the owner of the given partition.
+member * iconsistent_GetPartitionOwner(iconsistent * c, uint32_t partID);
+
+// LocateKey finds a home for given key
+member * iconsistent_locatekey(iconsistent * c, void *key, int len);
+
+// 
+imap * iconsistent_loadDistribution(iconsistent * c);
+
+// Remove removes a member from the consistent hash circle.
+int iconsistent_remove(iconsistent * c, member *Menber);
+
+//close member
+void  iconsistent_dismember(member ** Member);
 
 #ifdef __cplusplus
 }

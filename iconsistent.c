@@ -114,7 +114,19 @@ int array_del(array * arr, uint32_t opt)
 		arr->arr[i] = arr->arr[i + 1];
 	}
 
+	--(arr->size);
 	return 0;
+}
+
+void array_delValue(array * arr, uint64_t value)
+{
+	for (uint32_t i = 0; i < arr->size; ++i)
+	{
+		if (value == arr->arr[i]) {
+			array_del(arr, i);
+		}
+	}
+
 }
 
 uint64_t array_get(array * arr, uint32_t opt)
@@ -158,10 +170,11 @@ void array_destory(array ** arr)
 // ICONSISTENT API                                                  
 //=====================================================================
 
-static void iconsistent_distributePartitions(iconsistent * c);
-static int	iconsistent_distributeWithLoad(iconsistent * c, uint32_t partID,uint32_t idx,imap *partitions,imap * loads);
-static int	iconsistent_add_menber(iconsistent * c, member *Menber);
-
+static void		iconsistent_distributePartitions(iconsistent * c);
+static int		iconsistent_distributeWithLoad(iconsistent * c, uint32_t partID,uint32_t idx,imap *partitions,imap * loads);
+static int		iconsistent_add_menber(iconsistent * c, member *Menber);
+static void		iconsistent_delSlice(iconsistent * c, uint64_t value);
+static member * iconsistent_getClosestN(iconsistent * c,uint32_t partID, uint32_t count);
 
 iconsistent * iconsistent_init(iconfig config)
 {
@@ -181,7 +194,8 @@ iconsistent * iconsistent_init(iconfig config)
 
 	consistent->members			= imap_init();
 	consistent->ring			= imap_init();
-
+	consistent->loads = NULL;
+	consistent->partitions = NULL;
 	return consistent;
 }
 
@@ -225,8 +239,18 @@ static int iconsistent_add_menber(iconsistent * c, member *Menber)
 
 static void  iconsistent_distributePartitions(iconsistent * c)
 {
-	imap * loads		= imap_init();
-	imap * partitions	= imap_init();
+	imap * loads = NULL;
+	imap * partitions = NULL;
+
+	if (c->loads == NULL) {
+		loads = imap_init();
+		partitions = imap_init();
+	}
+	else {
+		loads = c->loads;
+		partitions = c->partitions;
+	}
+
 
 	for (uint64_t partID = 0; partID < c->partitionCount; ++partID) {
 		uint64_t _key = c->Hasher(&partID, sizeof(partID), send);
@@ -311,9 +335,7 @@ int iconsistent_add(iconsistent * c,member * Menber)
 	}
 
 	iconsistent_add_menber(c, Menber);
-
 	iconsistent_distributePartitions(c);
-
 	return 0;
 }
 
@@ -324,8 +346,113 @@ member * iconsistent_getmembers(iconsistent * c)
 	return tmp;
 }
 
-int iconsistent_FindPartitionID(iconsistent * c, void * key, int len)
+uint32_t iconsistent_FindPartitionID(iconsistent * c, void * key, int len)
 {
 	uint64_t hkey = c->Hasher(key, len, send);
-	return (int)(hkey % (c->partitionCount) );
+	return (uint32_t)(hkey % (c->partitionCount));
+}
+
+member * iconsistent_GetPartitionOwner(iconsistent * c, uint32_t partID)
+{
+	ikey key;
+	key.key = &partID;
+	key.len = sizeof(uint32_t);
+
+	void * tmp = imap_find(c->partitions, key);
+	if (tmp == NULL) {
+		retrun NULL;
+	}
+
+	member *Member = (member*)tmp;
+	member * m = (member*)calloc(Member->len, 1);
+
+	m->len = Member->len;
+	memcpy(m->string, Member->string, Member->len);
+	
+	return m;
+}
+
+member * iconsistent_locatekey(iconsistent * c, void *key, int len)
+{
+	uint32_t partID = iconsistent_FindPartitionID(c, key, len);
+	return iconsistent_GetPartitionOwner(c, partID);
+}
+
+
+void  iconsistent_dismember(member ** Member)
+{
+	if (*Member) {
+		if ((*Member)->string != NULL) {
+			free((*Member)->string);
+		}
+		free(*Member);
+		*Member = NULL;
+	}
+}
+
+static void iconsistent_delSlice(iconsistent * c,uint64_t value)
+{
+	array_delValue(c->sortedSet, value);
+}
+
+int iconsistent_remove(iconsistent * c, member *Member)
+{
+	ikey _key;
+	_key.key = Member->string;
+	_key.len = Member->len;
+
+	void * tmp = imap_find(c->members, _key);
+	if (tmp == NULL) {
+		return -1;
+	}
+
+	int size = Member->len + 4;
+	char * buf = (char *)calloc(size, 1);
+
+	for (int i = 0; i < c->config.ReplicationFactor; ++i) {
+		sprintf_s(buf, size, "%s%d", Member->string, i);
+		uint64_t key = c->Hasher(buf, size, send);
+		_key.key = &key;
+		_key.len = sizeof(uint64_t);
+		tmp = imap_del(c->ring, _key);
+		iconsistent_dismember(&((member*)tmp));
+		iconsistent_delSlice(c,key);
+	}
+
+	_key.key = Member->string;
+	_key.len = Member->len;
+
+	tmp = imap_del(c->members, _key);
+	if (tmp == NULL) {
+		free(buf);
+		return -1;
+	}
+
+	if (imap_size(c->members) == 0) {
+		return 0;
+	}
+
+	iconsistent_distributePartitions(c);
+	return 0;
+}
+
+imap * iconsistent_loadDistribution(iconsistent * c)
+{
+	return NULL;
+}
+
+static member * iconsistent_getClosestN(iconsistent * c,uint32_t partID, uint32_t count)
+{
+	if (count > c->members->size) {
+		return NULL;
+	}
+
+	uint64_t ownerKey = 0;
+	member * m = iconsistent_GetPartitionOwner(c, partID);
+	if (m == NULL) {
+		return NULL;
+	}
+
+
+
 }

@@ -70,7 +70,7 @@ typedef struct _imap {
 typedef struct _ikey {
     void * key;
     int len;
-}ikey ;
+}ikey;
 
 
 //=====================================================================
