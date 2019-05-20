@@ -6,7 +6,7 @@
 
 int main() {
 
-	
+	printf("hello consistent!\n");
 
 	return 0;
 }

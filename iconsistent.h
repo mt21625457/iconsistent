@@ -47,10 +47,10 @@ typedef struct _member {
 }member;
 
 typedef struct _iconfig {
-	uint64_t(*Hasher)(const void *, int, uint64_t);         //¹þÏ£º¯Êý 
-	int PartitionCount;                                     //ÃÜÔ¿·Ö²¼ÔÚ·ÖÇøÖ®¼ä¡£ÖÊÊýÊÇ¾ùÔÈ·Ö²¼ÃÜÔ¿µÄºÃ·½·¨¡£Èç¹û¼üÌ«¶à£¬Ñ¡ÔñÒ»¸ö´óµÄPartitionCount¡£
-	int ReplicationFactor;                                  //³ÉÔ±ÔÚÒ»ÖÂµÄ¹þÏ£»·ÉÏ¸´ÖÆ¡£Õâ¸öÊý×Ö±íÊ¾Ò»¸ö³ÉÔ±ÔÚ»·ÉÏ¸´ÖÆÁË¶àÉÙ´Î¡£
-	double load;                                            //ÓÃÓÚ¼ÆËãÆ½¾ùºÉÔØ
+	uint64_t(*Hasher)(const void *, int, uint64_t);         //ï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ 
+	int PartitionCount;                                     //ï¿½ï¿½Ô¿ï¿½Ö²ï¿½ï¿½Ú·ï¿½ï¿½ï¿½Ö®ï¿½ä¡£ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½È·Ö²ï¿½ï¿½ï¿½Ô¿ï¿½ÄºÃ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì«ï¿½à£¬Ñ¡ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½PartitionCountï¿½ï¿½
+	int ReplicationFactor;                                  //ï¿½ï¿½Ô±ï¿½ï¿½Ò»ï¿½ÂµÄ¹ï¿½Ï£ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½Æ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½Ô±ï¿½Ú»ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½Ù´Î¡ï¿½
+	double load;                                            //ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½ï¿½Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 }iconfig;
 
 typedef struct _iconsistent {
@@ -85,7 +85,7 @@ int iconsistent_add(iconsistent * c, member *Menber);
 member * iconsistent_getmembers(iconsistent * c);
 
 // FindPartitionID returns partition id for given key.
-int iconsistent_FindPartitionID(iconsistent * c,void * key, int len);
+uint32_t iconsistent_FindPartitionID(iconsistent * c,void * key, int len);
 
 // GetPartitionOwner returns the owner of the given partition.
 member * iconsistent_GetPartitionOwner(iconsistent * c, uint32_t partID);

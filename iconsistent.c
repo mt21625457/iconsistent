@@ -212,7 +212,7 @@ static int iconsistent_add_menber(iconsistent * c, member *Menber)
 	char * buf = (char *) calloc(size,1);
 	ikey key;
 	for (int i = 0; i < c->config.ReplicationFactor; ++i) {
-		sprintf_s(buf, size,"%s%d", Menber->string, i);
+		sprintf(buf,"%s%d", Menber->string, i);
 		uint64_t _key = c->Hasher(buf, size, send);
 		key.key = &key;
 		key.len = sizeof(uint64_t);
@@ -360,7 +360,7 @@ member * iconsistent_GetPartitionOwner(iconsistent * c, uint32_t partID)
 
 	void * tmp = imap_find(c->partitions, key);
 	if (tmp == NULL) {
-		retrun NULL;
+		return NULL;
 	}
 
 	member *Member = (member*)tmp;
@@ -410,12 +410,12 @@ int iconsistent_remove(iconsistent * c, member *Member)
 	char * buf = (char *)calloc(size, 1);
 
 	for (int i = 0; i < c->config.ReplicationFactor; ++i) {
-		sprintf_s(buf, size, "%s%d", Member->string, i);
+		sprintf(buf,"%s%d", Member->string, i);
 		uint64_t key = c->Hasher(buf, size, send);
 		_key.key = &key;
 		_key.len = sizeof(uint64_t);
 		tmp = imap_del(c->ring, _key);
-		iconsistent_dismember(&((member*)tmp));
+		iconsistent_dismember( ((member**)&tmp) );
 		iconsistent_delSlice(c,key);
 	}
 
